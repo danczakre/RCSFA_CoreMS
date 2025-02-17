@@ -1,0 +1,320 @@
+---
+title: "Merging and Processing CoreMS Outputs"
+author: "RED"
+date: "2025-02-12"
+output: html_document
+---
+
+The purpose of this markdown is to merge outputs generated using our CoreMS python script, and run that merged output through ftmsRanalysis.
+
+To run this full markdown, you'll need to:
+
+1) Install R + Rstudio (https://posit.co/download/rstudio-desktop/)
+2) Install tidyverse ("install_packages("tidyverse")")
+3) Install devtools ("install_pakcages("devtools")")
+4) Install ftmsRanalysis ("devtools::install_github("EMSL-Computing/ftmsRanalysis")")
+
+## Load packages
+This section loads all of the required R packages for this pipeline and allows you to tweak the import settings. You can specify your path to the files of interest and the type of thresholding you want to use below.
+
+```{r setup, include=T, warning=F}
+
+# ############### #
+### User Inputs ###
+# ############### #
+
+# name of the dataset
+dataset.name = "Dataset_Name"
+
+# merge by formula or calibrated m/z
+merge.by = "formula"
+
+# select formula selection (e.g., best match or all matches)
+formula.select = "best"
+
+# full path to directory with CoreMS output
+path_to_dir = easycsv::choose_dir()
+
+# select output name
+output_dir = paste0(path_to_dir, "/Merged_Output/")
+
+# lambda functions (included in the repo - point to where you stored the 
+# R function) Provided with permission: https://github.com/hyunseobsong/lambda
+source("~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R")
+
+###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######
+
+# ################# #
+### Load Packages ###
+# ################# #
+
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = path_to_dir)
+require(tidyverse)
+require(ftmsRanalysis) # https://github.com/EMSL-Computing/ftmsRanalysis
+
+```
+
+## Importing data into R
+This section is handling the hand off from the CoreMS outputs, while setting everything up to run smoothly through ftmsRanalysis. Currently, this is loading in .csv files that were generated using CoreMS above. This will navigate to the folder that you indicated above and load in every single .corems.csv; there is no mechanism to control for diverse datasets.
+
+```{r import}
+
+# ###################################### #
+### Import processed .csvs from CoreMS ###
+# ###################################### #
+
+# Change directory
+setwd(path_to_dir)
+
+# list CoreMS output files
+file.list = list.files(pattern = "corems.csv")
+
+# empty objects
+mol = NULL
+data = NULL
+
+# loop through files and import
+for(file in file.list){
+  
+  ### Loading and cleaning
+  # load CoreMS ouput
+  temp = read.csv(file = file, check.names = F)
+  
+  # fix molecular formulas
+  temp$`Molecular Formula` = gsub(" ", "", temp$`Molecular Formula`)
+  
+  # check elemental columns, adding if necessary
+  if(!"N" %in% names(temp)) temp = temp %>% add_column(N = NA)
+  if(!"S" %in% names(temp)) temp = temp %>% add_column(S = NA)
+  if(!"P" %in% names(temp)) temp = temp %>% add_column(P = NA)
+  
+  # remove unassigned peaks if merging by formulas
+  if(merge.by == "formula"){
+    if(length(which(temp$`Heteroatom Class` %in% "unassigned")) == 0){
+      print(paste0("No unassigned formulas present in ", file))
+    } else {
+      temp = temp[-which(temp$`Heteroatom Class` %in% "unassigned"),]
+    }
+  }
+  
+  # storing sample name
+  samp.name = gsub(".csv", "", file)
+  
+  
+  ### Filtering by predefined rules
+  # dropping formulas with an O:P ratio > 4 (the filter is not working in CoreMS)
+  op.ratio = temp$O/temp$P
+  
+  if(length(which(op.ratio < 4)) > 0){
+    temp = temp[-which(op.ratio < 4),]
+  }
+  
+  # filtering by NSP <=4
+  nsp.sum = apply(temp[,c("N", "S", "P")], 1, function(x) sum(x, na.rm = T))
+  
+  if(length(which(nsp.sum > 4)) > 0){
+    temp = temp[-which(nsp.sum > 4),]
+  }
+  
+  # selecting formulas
+  if(formula.select == "best" | merge.by == "mass"){
+    # Selecting highest confidence score
+    temp = temp %>% group_by(`Calibrated m/z`)%>%
+      slice_max(`Confidence Score`) %>% ungroup()
+  }
+  
+  ### Organization and combination
+  # separating molecular data
+  temp.mol = temp %>%
+    select(c("Calibrated m/z", "C", "H", "O", "N", "S", "P", "Molecular Formula",
+             "Is Isotopologue", "Heteroatom Class", "Calculated m/z", 
+             "m/z Error (ppm)"))
+  
+  # separating sample data
+  if(merge.by == "mass"){
+    temp.data = temp %>%
+      select(c("Calibrated m/z", "Peak Height")) %>%
+      rename(!!sym(samp.name) := `Peak Height`) # this !!sym notation is necessary to convert variable to dplyr object
+  } else if(merge.by == "formula"){
+    temp.data = temp %>%
+      select(c("Molecular Formula", "Peak Height")) %>%
+      rename(!!sym(samp.name) := `Peak Height`)
+  }
+  
+  # merging data
+  if(is.null(data)){
+    data = temp.data
+    mol = temp.mol
+  } else {
+    if(merge.by == "mass"){
+      data = data %>% full_join(temp.data, by = "Calibrated m/z") %>%
+        distinct() # full joins so we don't lose data
+      mol = rbind(mol, temp.mol)
+      mol = mol[!duplicated(mol$`Calibrated m/z`),]
+    } else if(merge.by == "formula"){
+      data = data %>% full_join(temp.data, by = "Molecular Formula") %>%
+        distinct()
+      mol = rbind(mol, temp.mol)
+      mol = mol[!duplicated(mol$`Molecular Formula`),]
+    }
+  }
+  
+  print(paste(samp.name, (nrow(temp.data)-nrow(temp.mol)), (nrow(data)-nrow(mol))))
+  print(paste0("Finished processing ", samp.name, " which is #", which(file.list %in% file), " out of ", length(file.list), " files (", round((which(file.list %in% file)/length(file.list))*100, digits = 2), "%)"))
+  
+}
+
+# resolving duplicated formula assignments
+if(merge.by == "formula"){
+  # Occasionally, two masses are assigned the identical formula but have 
+  # different "abundances this will simply aggregate them by average
+  
+  # The Mol object should automatically have this resolved via the !duplicated
+  # step
+  
+  data = data %>%
+    group_by(`Molecular Formula`) %>%
+    summarise_all(.funs = "mean")
+}
+
+# ensuring the two data files match
+if(merge.by == "mass"){
+  data = data[order(data$`Calibrated m/z`),] # easiest way to ensure correct order to to let R handle ordering
+  mol = mol[order(mol$`Calibrated m/z`),]
+} else if(merge.by == "formula"){
+  data = data[order(data$`Molecular Formula`),]
+  mol = mol[order(mol$`Molecular Formula`),]
+  
+  if(!identical(data$`Molecular Formula`, mol$`Molecular Formula`)){
+    stop("Something unpredictable went very wrong - your molecular formula do not match across the two files necessary for ftmsRanalysis. Good news - all the .csvs *should* still be saved.")
+  }
+}
+
+# creating output directory if it doesn't exist
+if(!dir.exists(output_dir)){
+  dir.create(output_dir)
+}
+
+# writing merged dataset
+write.csv(data, paste0(output_dir, dataset.name, "-Unprocssed_Data.csv"), 
+          quote = F, row.names = F)
+write.csv(mol, paste0(output_dir, dataset.name, "-Unprocessed_Mol.csv"), 
+          quote = F, row.names = F)
+
+```
+
+## Running ftmsRanalysis
+This chunk of code runs reconfigures the data to better mesh with ftmsRanalysis and then runs through a few of the capabilities built into ftmsRanalysis. Specifically, we will be 1) removing anything with an isotopic signature, 2) filtering any masses below 150 m/z or above 900 m/z, 3) calculating various derived metrics like AI and NOSC, and 4) assigning molecular formula to various boundary sets.
+
+```{r ftmsRanalysis}
+
+# ##################################### #
+### Preparing files for ftmsRanalysis ###
+# ##################################### #
+
+# if merged by formula, re-adding mass information
+if(merge.by == "formula"){
+  data = data.frame(`Calibrated m/z` = mol$`Calibrated m/z`, 
+                    data[,-which(colnames(data) %in% "Molecular Formula")],
+                    check.names = F)
+} 
+
+# filling NA's with 0's
+data[is.na(data)] = 0
+mol$N[is.na(mol$N)] = 0
+mol$S[is.na(mol$S)] = 0
+mol$P[is.na(mol$P)] = 0
+
+# ensuring elements are numeric
+mol$C = as.numeric(mol$C)
+mol$H = as.numeric(mol$H)
+mol$O = as.numeric(mol$O)
+mol$N = as.numeric(mol$N)
+mol$S = as.numeric(mol$S)
+mol$P = as.numeric(mol$P)
+
+# ensuring objects are dataframes (tibbles are the enemy here)
+data = as.data.frame(data)
+mol = as.data.frame(mol)
+
+# creating empty factor object
+factor = data.frame(Sample_ID = colnames(data)[-1], Location = "Somewhere")
+
+# if some duplicated masses got through - picking the assignment with lowest error
+dup.mass = mol$`Calibrated m/z`[duplicated(mol$`Calibrated m/z`)] # identify duplicated masses
+
+if(!length(dup.mass) == 0){
+  dup.ind = which(mol$`Calibrated m/z` %in% dup.mass) # find indices for duplicated masses
+  dup.filt = data.frame(index = dup.ind, mol[dup.ind,], check.names = F) # create mol object with indices and mol
+  
+  dup.filt = dup.filt %>% group_by(`Calibrated m/z`) %>% 
+    slice_max(abs(`m/z Error (ppm)`)) # identify highest error
+  
+  data = data[-dup.filt$index,] # remove the highest error dups from the dataset
+  mol = mol[-dup.filt$index,]
+}
+
+
+if(!identical(data$`Calibrated m/z`, mol$`Calibrated m/z`)){
+  stop("Something has gone tragically wrong - time to troubleshoot with little to no information!")
+} # quick identity check
+
+# ######################### #
+### Running ftmsRanalysis ###
+# ######################### #
+
+# convert to ftmsRanalysis object
+peak_icr = as.peakData(e_data = as.data.frame(data), f_data = factor, e_meta = as.data.frame(mol), 
+                       edata_cname = "Calibrated m/z", mass_cname = "Calibrated m/z", fdata_cname = "Sample_ID", 
+                       c_cname = "C", h_cname = "H", o_cname = "O", n_cname = "N", s_cname = "S", p_cname = "P", 
+                       isotopic_cname = "Is Isotopologue", isotopic_notation = "1")
+
+# calculating derived metrics (e.g., NOSC, DBE, etc.)
+peak_icr = compound_calcs(peak_icr)
+
+# assigning boundary sets
+peak_icr = assign_class(peak_icr, boundary_set = "bs1")
+peak_icr = assign_class(peak_icr, boundary_set = "bs2")
+peak_icr = assign_class(peak_icr, boundary_set = "bs3")
+
+# filter by mass
+filter_obj = mass_filter(peak_icr)
+peak_icr = applyFilt(filter_obj, peak_icr, min_mass = 100, max_mass = 1000)
+
+# lambda magic
+get_comp = get_compositions(peak_icr$e_meta)
+lambda = as.data.frame(get_lambda(get_comp$chemical_compositions))
+names <- rep("", 62)
+
+names[1:12] <- c("delGcox0","delGd0","delGcat0","delGan0","delGdis0","lambda0",
+                 "delGcox","delGd","delGcat","delGan","delGdis","lambda")
+
+stoich_colnames <- c("donor","h2o","hco3","nh4","hpo4","hs","h","e","acceptor",
+                     "biom")
+stoich_types <- c("stoichD","stoichA","stoichCat","stoichAn","stoichMet")
+
+for (i in 1:length(stoich_types)) {
+  names[((i-1)*10+13):(i*10+12)] <- array(sapply(stoich_types[i], paste, 
+                                                 stoich_colnames, sep="_"))
+}
+colnames(lambda) <- names
+lambda['MolForm'] <- get_comp$formulas
+lambda = as.data.frame(lambda[,c("MolForm", "delGcox0", "delGcox", "lambda0", 
+                                 "lambda", "delGd0", "delGd")])
+colnames(lambda) = c("MolForm","delGcox0PerCmol","delGcoxPerCmol", "lamO20",
+                     "lamO2","delGd0","delGd")
+lambda = lambda[!duplicated(lambda$MolForm),]
+
+# adding lambda information into mol object
+peak_icr$e_meta = peak_icr$e_meta %>% left_join(lambda, by = "MolForm")
+
+# Write results
+write.csv(peak_icr$e_data, 
+          paste0(output_dir, dataset.name, "-Processed_Data.csv"), 
+          quote = F, row.names = F)
+write.csv(peak_icr$e_meta, 
+          paste0(output_dir, dataset.name, "-Processed_Mol.csv"), 
+          quote = F, row.names = F)
+
+```
