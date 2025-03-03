@@ -17,7 +17,7 @@ Due to recent efforts from researchers at EMSL to improve formula assignment and
 
 This instruction set will walk you through how to install CoreMS and all prerequisites, run our SFA’s CoreMS script, and regenerate our published datasets (or apply these methods to your own datasets). By default, our CoreMS-based pipeline accepts a variety of data types including raw FIDs from Bruker instruments, XML/mass lists generated using Bruker Data Analysis, and a series of miscellaneous mass lists; the script will identify the data type using the extension. This instruction set assumes limited knowledge of Python, conda/mamba, and similar programs – if you have experience with these, some of this information might be redundant!
 
-<ins>**Disclaimer:**</ins> We are not affiliated with the CoreMS development team and any issues with this instruction set are not associated with them. Please reach out to us using this repository's issue system with any problems that arise if you are using our instructions.
+<ins>**Disclaimer:**</ins> We are not affiliated with the CoreMS development team and any issues with this instruction set are not associated with them. Please submit an issue to this repository if you run into any problems.
 
 ### Requirements
 - Reading through the CoreMS GitHub page (https://github.com/EMSL-Computing/CoreMS)
