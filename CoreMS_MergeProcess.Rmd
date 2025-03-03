@@ -10,12 +10,11 @@ The purpose of this markdown is to merge outputs generated using our CoreMS pyth
 To run this full markdown, you'll need to:
 
 1) Install R + Rstudio (https://posit.co/download/rstudio-desktop/)
-2) Install tidyverse ("install_packages("tidyverse")")
-3) Install devtools ("install_pakcages("devtools")")
-4) Install ftmsRanalysis ("devtools::install_github("EMSL-Computing/ftmsRanalysis")")
+2) Install necessary packages - install.packages(c(“devtools”, “tidyverse”, “easycsv”))
+3) Install ftmsRanalysis - devtools::install_github("EMSL-Computing/ftmsRanalysis")
 
 ## Load packages
-This section loads all of the required R packages for this pipeline and allows you to tweak the import settings. You can specify your path to the files of interest and the type of thresholding you want to use below.
+This section loads all of the required R packages for this pipeline and allows you to tweak the import settings. *Be sure to specify your dataset name.* The script should prompt you for your input directory.
 
 ```{r setup, include=T, warning=F}
 
@@ -24,7 +23,7 @@ This section loads all of the required R packages for this pipeline and allows y
 # ############### #
 
 # name of the dataset
-dataset.name = "Dataset_Name"
+dataset.name = "Test_Processed"
 
 # merge by formula or calibrated m/z
 merge.by = "formula"
@@ -38,12 +37,6 @@ path_to_dir = easycsv::choose_dir()
 # select output name
 output_dir = paste0(path_to_dir, "/Merged_Output/")
 
-# lambda functions (included in the repo - point to where you stored the 
-# R function) Provided with permission: https://github.com/hyunseobsong/lambda
-source("~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R")
-
-###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######
-
 # ################# #
 ### Load Packages ###
 # ################# #
@@ -53,10 +46,35 @@ knitr::opts_knit$set(root.dir = path_to_dir)
 require(tidyverse)
 require(ftmsRanalysis) # https://github.com/EMSL-Computing/ftmsRanalysis
 
+# catching internet activity
+is_online <- function(site="https://www.google.com") {
+  tryCatch({
+    readLines(site,n=1)
+    TRUE
+  },
+  warning = function(w) invokeRestart("muffleWarning"),
+  error = function(e) FALSE)
+} # pulled from Stack Overflow
+
+# lambda functions 
+# this is configured to pull the function from our repo, but has a fail safe that
+# you can configure if you lose an internet connection
+# Modified from https://github.com/hyunseobsong/lambda with permission
+# if(is_online()){
+#   source("https://raw.githubusercontent.com/danczakre/WHONDRS_CoreMS/refs/heads/main/getLambda.R")
+# } else {
+#   source("~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R")
+# } #### PLACEHOLDER UNTIL REPO IS PUBLIC
+
+source("~/Documents/Development/CoreMS Deployment/getLambda.R")
+
+
+###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######
+
 ```
 
 ## Importing data into R
-This section is handling the hand off from the CoreMS outputs, while setting everything up to run smoothly through ftmsRanalysis. Currently, this is loading in .csv files that were generated using CoreMS above. This will navigate to the folder that you indicated above and load in every single .corems.csv; there is no mechanism to control for diverse datasets.
+This chunk loads each corems.csv file generated using our CoreMS script. This will navigate to the folder that you indicated above and load in every single file; there is no mechanism to control for diverse datasets.
 
 ```{r import}
 
@@ -122,6 +140,12 @@ for(file in file.list){
     # Selecting highest confidence score
     temp = temp %>% group_by(`Calibrated m/z`)%>%
       slice_max(`Confidence Score`) %>% ungroup()
+  }
+  
+  # pre-filtering duplicates
+  if(merge.by == "formula"){
+    temp = temp %>% group_by(`Molecular Formula`)%>%
+      slice_max(`Peak Height`) %>% ungroup()
   }
   
   ### Organization and combination

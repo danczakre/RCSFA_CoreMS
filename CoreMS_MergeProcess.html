@@ -363,23 +363,23 @@ ftmsRanalysis.</p>
 <p>To run this full markdown, you’ll need to:</p>
 <ol style="list-style-type: decimal">
 <li>Install R + Rstudio (<a href="https://posit.co/download/rstudio-desktop/" class="uri">https://posit.co/download/rstudio-desktop/</a>)</li>
-<li>Install tidyverse (“install_packages(”tidyverse”)“)</li>
-<li>Install devtools (“install_pakcages(”devtools”)“)</li>
-<li>Install ftmsRanalysis
-(“devtools::install_github(”EMSL-Computing/ftmsRanalysis”)“)</li>
+<li>Install necessary packages - install.packages(c(“devtools”,
+“tidyverse”, “easycsv”))</li>
+<li>Install ftmsRanalysis -
+devtools::install_github(“EMSL-Computing/ftmsRanalysis”)</li>
 </ol>
 <div id="load-packages" class="section level2">
 <h2>Load packages</h2>
 <p>This section loads all of the required R packages for this pipeline
-and allows you to tweak the import settings. You can specify your path
-to the files of interest and the type of thresholding you want to use
-below.</p>
+and allows you to tweak the import settings. <em>Be sure to specify your
+dataset name.</em> The script should prompt you for your input
+directory.</p>
 <pre class="r"><code># ############### #
 ### User Inputs ###
 # ############### #
 
 # name of the dataset
-dataset.name = &quot;Dataset_Name&quot;
+dataset.name = &quot;Test_Processed&quot;
 
 # merge by formula or calibrated m/z
 merge.by = &quot;formula&quot;
@@ -393,9 +393,14 @@ path_to_dir = easycsv::choose_dir()
 # select output name
 output_dir = paste0(path_to_dir, &quot;/Merged_Output/&quot;)
 
-# lambda functions (included in the repo - point to where you stored the 
-# R function) Provided with permission: https://github.com/hyunseobsong/lambda
-source(&quot;~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R&quot;)</code></pre>
+# ################# #
+### Load Packages ###
+# ################# #
+
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = path_to_dir)
+require(tidyverse)</code></pre>
+<pre><code>## Loading required package: tidyverse</code></pre>
 <pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -406,16 +411,7 @@ source(&quot;~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R&
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<pre class="r"><code>###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######
-
-# ################# #
-### Load Packages ###
-# ################# #
-
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = path_to_dir)
-require(tidyverse)
-require(ftmsRanalysis) # https://github.com/EMSL-Computing/ftmsRanalysis</code></pre>
+<pre class="r"><code>require(ftmsRanalysis) # https://github.com/EMSL-Computing/ftmsRanalysis</code></pre>
 <pre><code>## Loading required package: ftmsRanalysis
 ## 
 ## Attaching package: &#39;ftmsRanalysis&#39;
@@ -423,14 +419,36 @@ require(ftmsRanalysis) # https://github.com/EMSL-Computing/ftmsRanalysis</code><
 ## The following object is masked from &#39;package:stats&#39;:
 ## 
 ##     heatmap</code></pre>
+<pre class="r"><code># catching internet activity
+is_online &lt;- function(site=&quot;https://www.google.com&quot;) {
+  tryCatch({
+    readLines(site,n=1)
+    TRUE
+  },
+  warning = function(w) invokeRestart(&quot;muffleWarning&quot;),
+  error = function(e) FALSE)
+} # pulled from Stack Overflow
+
+# lambda functions 
+# this is configured to pull the function from our repo, but has a fail safe that
+# you can configure if you lose an internet connection
+# Modified from https://github.com/hyunseobsong/lambda with permission
+# if(is_online()){
+#   source(&quot;https://raw.githubusercontent.com/danczakre/WHONDRS_CoreMS/refs/heads/main/getLambda.R&quot;)
+# } else {
+#   source(&quot;~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R&quot;)
+# } #### PLACEHOLDER UNTIL REPO IS PUBLIC
+
+source(&quot;~/Documents/Development/CoreMS Deployment/getLambda.R&quot;)
+
+
+###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######</code></pre>
 </div>
 <div id="importing-data-into-r" class="section level2">
 <h2>Importing data into R</h2>
-<p>This section is handling the hand off from the CoreMS outputs, while
-setting everything up to run smoothly through ftmsRanalysis. Currently,
-this is loading in .csv files that were generated using CoreMS above.
-This will navigate to the folder that you indicated above and load in
-every single .corems.csv; there is no mechanism to control for diverse
+<p>This chunk loads each corems.csv file generated using our CoreMS
+script. This will navigate to the folder that you indicated above and
+load in every single file; there is no mechanism to control for diverse
 datasets.</p>
 <pre class="r"><code># ###################################### #
 ### Import processed .csvs from CoreMS ###
@@ -494,6 +512,12 @@ for(file in file.list){
     # Selecting highest confidence score
     temp = temp %&gt;% group_by(`Calibrated m/z`)%&gt;%
       slice_max(`Confidence Score`) %&gt;% ungroup()
+  }
+  
+  # pre-filtering duplicates
+  if(merge.by == &quot;formula&quot;){
+    temp = temp %&gt;% group_by(`Molecular Formula`)%&gt;%
+      slice_max(`Peak Height`) %&gt;% ungroup()
   }
   
   ### Organization and combination
