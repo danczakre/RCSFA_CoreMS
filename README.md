@@ -1,6 +1,10 @@
 # WHONDRS CoreMS Pipeline
 This repository will walk you through the installation of CoreMS and necessary pre-requisites, and will also provide all of the necessary files to replicate the pipeline which the River Corridor Hydrobiogeochemistry Science Focus Area (RC SFA) from PNNL uses to process FTICR-MS data.
 
+## Contents
+1) [Installing](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#instructions-for-installing-corems)
+2) [Running](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#running-the-corems-pipeline)
+3) [Troubleshooting](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#troubleshooting)
 
 ## Instructions for installing CoreMS
 ### Overview
@@ -110,11 +114,51 @@ podman volume rm [volume name]
     - Run the “CoreMS_Runner.py” script on the provided example data
       - ```python CoreMS_Runner.py /Documents/CoreMS-[current date or version]/tests/tests_data/ftms/srfa_neg_xml_example.xml /Documents/Output```
     - If you see an output in your chosen output folder, everything worked correctly!
+   
+## Running the CoreMS Pipeline
+Assuming everything above worked (or that you had CoreMS installed through another mechanism), you are ready to run our pipeline. In principle, there are two steps to run data through CoreMS and we’ve provided example data for you to test each step.
 
+1) Run the CoreMS_Runner.py script on your data or the example data (*Test_Raw*).
+```
+python CoreMS_Runner.py -i /Documents/Input_Data -o /Documents/Processed_Data -r /Documents/CoreMS-[current date or version]/db/Hawkes_neg.ref
+
+Required Options:
+-i = input folder
+-o = output directory
+-r = location of reference for calibration; feel free to move the reference file elsewhere [found in the CoreMS repo by default]
+
+Optional Options:
+-t = threshold method used in peak identification when run on a raw data file; xmls are always run using SN (log)
+-c = calibration value used for selecting points (5)
+```
+
+2) Run the CoreMS_MergeProcess.Rmd script in RStudio.
+   - Install all the required packages in R
+```
+install.packages(c(“devtools”, “tidyverse”, “easycsv”))
+devtools::install_github("EMSL-Computing/ftmsRanalysis")
+```
+   - Change your input directory to your processed data or our example data (*Test_Processed*)
+     - Currently, the script is configured to use easycsv (an OS agnostic package) to prompt the user to input their desired directory, though sometimes this can fail. In this case, you can set path_to_dir to your input directory. 
+   - Click “Knit” at the top of the RStudio window
+
+## Troubleshooting
 **Podman Troubleshooting**
-- Windows: On occasion, Podman will appear running but ultimately any command you try to run will fail (e.g., Step 10d doesn’t work). This appears to be the result of a file not generating correctly.
+- **Windows:** On occasion, Podman will appear running but ultimately any command you try to run will fail (e.g., Step 10d doesn’t work). This appears to be the result of a file not generating correctly.
   - Navigate to C:\Users\[current user]
   - If you do not see a folder named .ssh, please create it
   - Navigate into that folder
   - Create a new, empty text file named ‘known_hosts’ without any extension
   - Run podman ps -a in your Command Prompt; if you see an output, this fix has succeeded, if not, please send us a message
+- **Windows:** Podman requires that your system has the necessary virtualization subsystems enabled. For most installations of Windows 10/11, these features will be enabled by default (for example, many newer security features require virtualization). Some Windows systems may not be completely configurated and require a couple extra steps.
+  - After installing Podman (Step 9), you’ll see a message about virtualization not being enabled. This message will have an accompanying link with instructions - if you follow the instructions, you should be able to enable virtualization and proceed to Step 10. 
+- **Windows:** In limited situations, communication with the Docker image server is impossible resulting in Step 10d failing with an error message like “Temporary failure in name resolution”. 
+  - This is likely a result of your corporate security infrastructure blocking communication with the necessary server. Please reach out to IT to see if access to the necessary servers (registry-1.docker.io).
+  - If you are still having issues, please let us know.
+ 
+## Acknowledgements
+This pipeline leverages tools made by lots of talented folks, specifically, I wanted to call out. If you are using this for any reason, please cite each of the following:
+1) **CoreMS** - [GitHub Link](https://github.com/EMSL-Computing/CoreMS)
+2) **ftmsRanalysis** - [GitHub Link](https://github.com/EMSL-Computing/ftmsRanalysis) and [Manuscript](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007654)
+3) **lambda** - [GitHub Link](https://github.com/hyunseobsong/lambda) and [Manuscript](https://doi.org/10.3389/fmicb.2020.531756)
+
