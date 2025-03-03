@@ -5,6 +5,7 @@ This repository will walk you through the installation of CoreMS and necessary p
 1) [Installing](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#instructions-for-installing-corems)
 2) [Running](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#running-the-corems-pipeline)
 3) [Troubleshooting](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#troubleshooting)
+4) [Acknowledgments](https://github.com/danczakre/WHONDRS_CoreMS/edit/main/README.md#acknowledgements)
 
 ## Instructions for installing CoreMS
 ### Overview
@@ -157,7 +158,7 @@ devtools::install_github("EMSL-Computing/ftmsRanalysis")
   - If you are still having issues, please let us know.
  
 ## Acknowledgements
-This pipeline leverages tools made by lots of talented folks, specifically, I wanted to call out. If you are using this for any reason, please cite each of the following:
+This pipeline leverages tools made by lots of talented folks. If you are using this repo for any reason, please definitely cite each of the following (though look at our manuscripts for a more complete list of common FTICR-MS related citations):
 1) **CoreMS** - [GitHub Link](https://github.com/EMSL-Computing/CoreMS)
 2) **ftmsRanalysis** - [GitHub Link](https://github.com/EMSL-Computing/ftmsRanalysis) and [Manuscript](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007654)
 3) **lambda** - [GitHub Link](https://github.com/hyunseobsong/lambda) and [Manuscript](https://doi.org/10.3389/fmicb.2020.531756)
