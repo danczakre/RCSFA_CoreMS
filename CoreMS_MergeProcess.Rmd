@@ -60,14 +60,11 @@ is_online <- function(site="https://www.google.com") {
 # this is configured to pull the function from our repo, but has a fail safe that
 # you can configure if you lose an internet connection
 # Modified from https://github.com/hyunseobsong/lambda with permission
-# if(is_online()){
-#   source("https://raw.githubusercontent.com/danczakre/WHONDRS_CoreMS/refs/heads/main/getLambda.R")
-# } else {
-#   source("~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R")
-# } #### PLACEHOLDER UNTIL REPO IS PUBLIC
-
-source("~/Documents/Development/CoreMS Deployment/getLambda.R")
-
+if(is_online()){
+  source("https://raw.githubusercontent.com/danczakre/RCSFA_CoreMS/refs/heads/main/getLambda.R")
+} else {
+  source("path/to/getLambda.R")
+}
 
 ###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######
 

@@ -433,14 +433,11 @@ is_online &lt;- function(site=&quot;https://www.google.com&quot;) {
 # this is configured to pull the function from our repo, but has a fail safe that
 # you can configure if you lose an internet connection
 # Modified from https://github.com/hyunseobsong/lambda with permission
-# if(is_online()){
-#   source(&quot;https://raw.githubusercontent.com/danczakre/WHONDRS_CoreMS/refs/heads/main/getLambda.R&quot;)
-# } else {
-#   source(&quot;~/Documents/Code Information/FTICR Scripts/R Functions/getLambda.R&quot;)
-# } #### PLACEHOLDER UNTIL REPO IS PUBLIC
-
-source(&quot;~/Documents/Development/CoreMS Deployment/getLambda.R&quot;)
-
+if(is_online()){
+  source(&quot;https://raw.githubusercontent.com/danczakre/RCSFA_CoreMS/refs/heads/main/getLambda.R&quot;)
+} else {
+  source(&quot;path/to/getLambda.R&quot;)
+}
 
 ###### DO NOT EDIT BELOW THIS LINE IN THIS CHUNK ######</code></pre>
 </div>
