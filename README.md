@@ -87,7 +87,8 @@ pip install git+https://github.com/EMSL-Computing/CoreMS
 
 10) Install Podman, an open-source alternative to Docker
     - **On Windows:** Follow the instructions from Podman’s own documentation (https://podman-desktop.io/docs/installation/windows-install)
-      - You will also need to ensure you have “Compose” setup (https://podman-desktop.io/docs/compose/setting-up-compose)
+      - You will also need to ensure you have “Compose” setup (https://podman-desktop.io/docs/compose/setting-up-compose). There should be an option during the Podman Desktop installation process.
+      - **Important:** After you install Podman and it asks if you want to initialize a machine, press the "Skip" button in the upper right corner of the window to move onto the Compose installation.
     - **On macOS:** Use homebrew to install Podman
 ```
 brew install podman
@@ -98,6 +99,7 @@ brew install podman-compose
     - **On Windows:** Open Command Prompt instead of Miniforge Prompt for this section
 ```
 cd /Documents/CoreMS-[current date or version]/
+podman machine init
 podman machine start
 podman-compose up -d
 podman container list
