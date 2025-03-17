@@ -297,7 +297,7 @@ def CoreMS_Run(file_path, threshold_method):
     )
 
     # write calibration information
-    cal_df.to_csv(f"{path_to_out}{out_name}.corems.cal", sep="\t", index=False)
+    cal_df.to_csv(f"{path_to_out}/{out_name}.corems.cal", sep="\t", index=False)
 
     # ############################ #
     ### Molecular Formula Search ###
@@ -344,7 +344,7 @@ def CoreMS_Run(file_path, threshold_method):
     ).run_worker_mass_spectrum()
 
     # Export file
-    mass_spectrum_obj.to_csv(f"{path_to_out}{out_name}.corems.csv")
+    mass_spectrum_obj.to_csv(f"{path_to_out}/{out_name}.corems.csv")
 
     #### end of function
 
