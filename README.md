@@ -63,6 +63,8 @@ mamba create -n corems-[current date or version]
 ```
 mamba activate corems-[current date or version]
 mamba install python=3.10
+
+### If you get an error regarding mamba not being initialized, please follow the instructions that the function gives you
 ```
 
 6) Install dependencies by running the following command in your terminal
@@ -93,7 +95,7 @@ brew install podman-compose
 ```
 
 11) Load CoreMS’s database Docker image into Podman
-    - On Windows: Open Command Prompt instead of Miniforge Prompt for this section
+    - **On Windows:** Open Command Prompt instead of Miniforge Prompt for this section
 ```
 cd /Documents/CoreMS-[current date or version]/
 podman machine start
@@ -113,7 +115,7 @@ podman volume rm [volume name]
     - In your terminal, make sure that you have started your CoreMS environment
       - ```mamba activate corems-[current date or version]```
     - Run the “CoreMS_Runner.py” script on the provided example data
-      - ```python CoreMS_Runner.py /Documents/CoreMS-[current date or version]/tests/tests_data/ftms/srfa_neg_xml_example.xml /Documents/Output```
+      - ```python CoreMS_Runner.py -i [path-to-CoreMS-repo]/tests/tests_data/ftms/srfa_neg_xml_example.xml -o [path-to-RCSFA-repo]/Output -r [path-to-Hawkes_neg.ref]```
     - If you see an output in your chosen output folder, everything worked correctly!
    
 ## Running the CoreMS Pipeline
