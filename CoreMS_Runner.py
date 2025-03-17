@@ -26,17 +26,21 @@ from corems.mass_spectrum.calc.Calibration import MzDomainCalibration  # noqa: E
 parser = argparse.ArgumentParser(
                     prog='CoreMS (RC-SFA)',
                     description='This is an implementation of CoreMS developed by the River Corridor SFA at PNNL. This function accepts folders as inputs, assuming those folders are filled with compatible FTICR-MS files. We prefer using .d or .xml files, but additional versions are compatible (with some testing).')
-parser.add_argument('-i', '--input_dir', help="Input directory that contains relevant FTICR-MS files.")
-parser.add_argument('-o', '--output_dir', help="Specifies the output location.")
-parser.add_argument('-t', '--threshold_method', default='log', help="Set the threshold used during peak analyses (e.g., how are peaks going to be quality controlled). Log is set as the default; signal-to-noise is automatically used for XML files regardless of setting.")
-parser.add_argument('-c', '--calib_thresh', default=5, type=int, help="Set the number of points required for a calibration to be considered 'good'. By default, this is set to 5.")
+parser.add_argument('-i', '--input_dir', required=True, help="Input directory that contains relevant FTICR-MS files (Required).")
+parser.add_argument('-o', '--output_dir', required=True, help="Specifies the output location (Required).")
+parser.add_argument('-r', '--reference_location', required=True, help="Specifies the location of the reference file in the CoreMS repo (Hawkes.ref) (Required).")
+parser.add_argument('-t', '--threshold_method', default='log', help="Set the threshold used during peak analyses (e.g., how are peaks going to be quality controlled). Log is set as the default; signal-to-noise is automatically used for XML files regardless of setting (Optional).")
+parser.add_argument('-c', '--calib_thresh', default=5, type=int, help="Set the number of points required for a calibration to be considered 'good'. By default, this is set to 5 (Optional).")
 args = parser.parse_args()
 
-# Full path to directory containing Bruker XMLs or .d folders (e.g., )
+# Full path to directory containing Bruker XMLs or .d folders
 path_to_dir = args.input_dir
 
 # Adding in a (eventually flexible) output directory
 path_to_out = args.output_dir
+
+# Specify the location of the calibration reference
+ref_file_location = args.reference_location
 
 # Specify the type of thresholding (only for .d file types)
 threshold_method = args.threshold_method # options are signal-to-noise (SN) or log; XMLs default to SN
@@ -268,9 +272,6 @@ def CoreMS_Run(file_path, threshold_method):
     # ############### #
     ### Calibration ###
     # ############### #
-
-    # Load in calibration list
-    ref_file_location = "/Users/danc808/Documents/Miscellaneous/Hawkes_neg.ref"
 
     # Run auto-cal checker
     ref_peaks, row_ind = auto_cal(mass_spectrum_obj, ref_file_location)
