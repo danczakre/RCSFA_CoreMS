@@ -69,8 +69,8 @@ mamba install python=3.10
 
 6) Install dependencies by running the following command in your terminal
 ```
-mamba install pip git pythonnet psycopg2-binary
-# I suspect we're safe without the psycopg2-binary, but I have yet to do A/B testing
+mamba install pip git pythonnet
+# Note for macOS: you might need to include psycopg2-binary in the above command.
 ```
 
 7) Deactivate and reactivate the virtual environment to ensure it loads correctly
