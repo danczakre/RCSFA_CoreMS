@@ -1,3 +1,6 @@
+# Single File CoreMS Pipeline
+There are some issues with the CoreMS_Runner.py that almost look like a race condition but seem to arise at nebulous situations (e.g., not consistently across computers or even on the same computer). As an attempt to alleviate some of the burden from Python, I'm generating a single file version of the CoreMS_Runner.py and some example batch scripts containing for loops to run through files similarly to the main branch. This *should* allow the OS to handle whatever is causing the race condition...hopefully...
+
 # RC SFA CoreMS Pipeline
 This repository will walk you through the installation of CoreMS and necessary pre-requisites, and will also provide all of the necessary files to replicate the pipeline which the River Corridor Hydrobiogeochemistry Science Focus Area (RC SFA) from PNNL uses to process FTICR-MS data.
 
