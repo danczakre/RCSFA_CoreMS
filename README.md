@@ -21,6 +21,7 @@ This instruction set will walk you through how to install CoreMS and all prerequ
 
 ### Requirements
 - Reading through the CoreMS GitHub page (https://github.com/EMSL-Computing/CoreMS)
+- Download this repository - store is somewhere memorable!
 - Any computer
   - These instructions are written for Windows and macOS; if you are using Linux, the macOS instructions should be equivalent
   - Some computers will likely run through the analyses slower than others, so the computer should be recent (newer than 2020-2021)
@@ -39,7 +40,7 @@ This instruction set will walk you through how to install CoreMS and all prerequ
 
 ### Instructions
 1) Download CoreMS repo from GitHub (either via the website or using git clone)
-   -	Make sure you store it somewhere memorable and intentional where you won’t accidentally delete it – let’s call this location **/Documents/CoreMS-[current date or version]/**
+   -	Make sure you store it somewhere memorable and intentional where you won’t accidentally delete it – let’s call this location **/Documents/CoreMS-3.1.0/**
 2) Open your terminal
    - **On Windows** – open Miniforge Prompt
    - **On macOS** – open Terminal
@@ -56,33 +57,32 @@ brew install mono
    - One of the advantages of virtual environments is the control of software versions. By naming this environment after the date that you install (or the version of CoreMS you are using), you can always ensure you can go back to a known working and good version.
 ```
 mamba update --all
-mamba create -n corems-[current date or version]
+mamba create -n corems-3.1.0
 ```
 
 5) Activate your virtual environment and install Python v3.10 by running the following commands in your terminal
 ```
-mamba activate corems-[current date or version]
+conda activate corems-3.1.0
 mamba install python=3.10
-
-### If you get an error regarding mamba not being initialized, please follow the instructions that the function gives you
 ```
 
 6) Install dependencies by running the following command in your terminal
 ```
-mamba install pip git pythonnet
-# Note for macOS: you might need to include psycopg2-binary in the above command.
+mamba install pip git pythonnet psycopg2-binary
+# CoreMS v3.3.0 has psycopg2-binary listed as a requirement, so psycopg2-binary is no longer necessary if you deploy the most recent version
 ```
 
 7) Deactivate and reactivate the virtual environment to ensure it loads correctly
 ```
-mamba deactivate
-mamba activate corems-[current date or version]
+conda deactivate
+mamba activate corems-3.1.0
 ```
 
 9) Install CoreMS into your virtual environment from the git repo
 ```
-pip install git+https://github.com/EMSL-Computing/CoreMS
-# This will download and install the current version of CoreMS, regardless of the version you downloaded above
+pip install git+https://github.com/EMSL-Computing/CoreMS.git@c77d0ae14287a69e3c2cee410267ed63ab479bca
+# This will download and install CoreMS-3.1.0 based on CoreMS's commit history
+# Our single file branch is experimenting with more recent versions of CoreMS
 ```
 
 10) Install Podman, an open-source alternative to Docker
@@ -98,7 +98,7 @@ brew install podman-compose
 11) Load CoreMS’s database Docker image into Podman
     - **On Windows:** Open Command Prompt instead of Miniforge Prompt for this section
 ```
-cd /Documents/CoreMS-[current date or version]/
+cd /Documents/CoreMS-3.1.0/
 podman machine init
 podman machine start
 podman-compose up -d
@@ -115,7 +115,7 @@ podman volume rm [volume name]
 
 12) Test your CoreMS installation using the provided Python script and test data
     - In your terminal, make sure that you have started your CoreMS environment
-      - ```mamba activate corems-[current date or version]```
+      - ```mamba activate corems-3.1.0```
     - Run the “CoreMS_Runner.py” script on the provided example data
       - ```python CoreMS_Runner.py -i [path-to-CoreMS-repo]/tests/tests_data/ftms/srfa_neg_xml_example.xml -o [path-to-RCSFA-repo]/Output -r [path-to-Hawkes_neg.ref]```
     - If you see an output in your chosen output folder, everything worked correctly!
@@ -125,7 +125,7 @@ Assuming everything above worked (or that you had CoreMS installed through anoth
 
 1) Run the CoreMS_Runner.py script on your data or the example data (*Test_Raw*).
 ```
-python CoreMS_Runner.py -i /Documents/Input_Data -o /Documents/Processed_Data -r /Documents/CoreMS-[current date or version]/db/Hawkes_neg.ref
+python CoreMS_Runner.py -i /Documents/Input_Data -o /Documents/Processed_Data -r /Documents/CoreMS-3.1.0/db/Hawkes_neg.ref
 
 Required Options:
 -i = input folder
@@ -148,6 +148,15 @@ devtools::install_github("EMSL-Computing/ftmsRanalysis")
    - Click “Knit” at the top of the RStudio window
 
 ## Troubleshooting
+**mamba/conda Troubleshooting**
+- Removing a conda environment
+  - Sometimes, our environments break (an inevitiblity it seems sometimes). Fortunately, we can remove them and restart from the beginning.
+  - List your environments to find the name of interest: ```mamba env list```
+  - Remove your environment (assuming it's the CoreMS environment): ```mamba env remove -n CoreMS-3.1.0```
+- conda/mamba confusion
+  - These commands are virtually interchangable though there are some instances where they shouldn't be substituted
+  - Given some inconsistencies in behavior that would lead to confusion, following the patterns above should serve you well. Specifically, use **conda to activate/deactivate environments** and use **mamba to install packages and create environments**.
+
 **Podman Troubleshooting**
 - **Windows:** On occasion, Podman will appear running but ultimately any command you try to run will fail (e.g., Step 10d doesn’t work). This appears to be the result of a file not generating correctly.
   - Navigate to C:\Users\[current user]
