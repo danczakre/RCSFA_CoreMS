@@ -19,6 +19,8 @@ This instruction set will walk you through how to install CoreMS and all prerequ
 
 <ins>**Disclaimer:**</ins> We are not affiliated with the CoreMS development team and any issues with this instruction set are not associated with them. Please submit an issue to this repository if you run into any problems.
 
+<ins>**Important Note:**</ins> We have a signal-to-noise threshold set to **12** for filtering peaks picked by Bruker's Data Analysis; this is fairly conservative. Feel free to change to your needs (e.g., search for *filter_by_s2n* in the CoreMS_Runner.py file) and option might be added down the road.
+
 ### Requirements
 - Reading through the CoreMS GitHub page (https://github.com/EMSL-Computing/CoreMS)
 - Download this repository - store is somewhere memorable!
