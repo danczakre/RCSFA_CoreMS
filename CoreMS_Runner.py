@@ -1,4 +1,3 @@
-# %%
 ### CoreMS function
 # This is the CoreMS script as a callable function, rather than just a script.
 #
@@ -147,7 +146,7 @@ def CoreMS_Run(file_path, threshold_method):
 
         # S2N filter
         if bool(re.search("SN", threshold_method)):
-            mass_spectrum_obj.filter_by_s2n(7)
+            mass_spectrum_obj.filter_by_s2n(12)
 
     elif bool(re.search(".xml", file_path)):  # importing .xml files
         print("Importing data from a Bruker XML.")
@@ -213,6 +212,38 @@ def CoreMS_Run(file_path, threshold_method):
         mass_spectrum_obj.filter_by_s2n(12)
 
     elif bool(
+        re.search(".txt", file_path)
+    ):  # importing Bruker generated .txt files
+        # load in data frame (columns should already be addressed by preprocessing script)
+        df = pd.read_csv(file_path, sep='\t')
+
+        # checking to see if the file is compatible with Bruker formatting
+        expected=list(['mOz', 'abs_abu', 'sn', 'resolution', 'rel_abu'])
+        if(not expected == list(df.columns)):
+            sys.exit("Seems like your text file is not an expected Bruker output - consider converting it.")
+
+        # Setting threshold preferences (fixed for peak picked files here)
+        MSParameters.mass_spectrum.noise_threshold_method = "absolute_abundance"
+        MSParameters.mass_spectrum.noise_threshold_absolute_abundance = 1
+
+        # Rename columns
+        df.rename(
+            columns=ReadMassList(file_path).parameters.header_translate,
+            inplace=True,
+        )
+
+        # Extracting output parameters
+        output_parameters = ReadMassList(file_path).get_output_parameters(-1)
+
+        # Getting mass spectrum object
+        mass_spectrum_obj = MassSpecCentroid(
+            df.to_dict(orient="list"), output_parameters
+        )
+
+        # Filtering by SN
+        mass_spectrum_obj.filter_by_s2n(7)
+
+    elif bool(
         re.search(".processed.csv", file_path)
     ):  # importing files with intensity + SN
         print(
@@ -265,7 +296,7 @@ def CoreMS_Run(file_path, threshold_method):
         sys.exit("File type not supported!")
 
     # Store file name for output
-    out_name = re.sub("\.xml|\.d|\.thermo.csv|\.processed.csv", "", file_path)
+    out_name = re.sub("\.xml|\.d|\.thermo.csv|\.processed.csv|\.txt", "", file_path)
 
     print(out_name)
 
@@ -307,6 +338,9 @@ def CoreMS_Run(file_path, threshold_method):
     mass_spectrum_obj.molecular_search_settings.url_database = (
         "postgresql+psycopg2://coremsappdb:coremsapppnnl@localhost:5432/coremsapp"
     )
+
+    # Setting DB jobs to 1
+    mass_spectrum_obj.molecular_search_settings.db_jobs=1
 
     # Molecular formula error settings
     mass_spectrum_obj.molecular_search_settings.min_ppm_error = -1
@@ -360,7 +394,7 @@ if not os.path.exists(path_to_out):
 file_list = [
     f
     for f in os.listdir(path_to_dir)
-    if re.match(".*\.xml$|.*\.d$|.*\.thermo.csv$|.*\.processed.csv$", f)
+    if re.match(".*\.xml$|.*\.d$|.*\.thermo.csv$|.*\.processed.csv$|.*\.txt$", f)
 ]  # list files from directory
 
 # Check to see if the pipe has been run before, but broke
@@ -370,7 +404,7 @@ run_list = [
 
 if bool(len(run_list) > 0):
     # temporary rename to make matching work
-    temp_file = [re.sub(".d$|.thermo.csv$|.processed.csv$", "", f) for f in file_list]
+    temp_file = [re.sub(".d$|.thermo.csv$|.processed.csv$|.txt$", "", f) for f in file_list]
     temp_run = [re.sub(".corems.csv$", "", f) for f in run_list]
 
     # finding true/false indices for matches
