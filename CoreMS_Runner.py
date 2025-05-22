@@ -298,7 +298,7 @@ def CoreMS_Run(file_path, threshold_method):
     # Store file name for output
     out_name = re.sub("\.xml|\.d|\.thermo.csv|\.processed.csv|\.txt", "", file_path)
 
-    print(out_name)
+    print(" ".join(["Loaded", out_name]))
 
     # ############### #
     ### Calibration ###
@@ -404,7 +404,7 @@ run_list = [
 
 if bool(len(run_list) > 0):
     # temporary rename to make matching work
-    temp_file = [re.sub(".d$|.thermo.csv$|.processed.csv$|.txt$", "", f) for f in file_list]
+    temp_file = [re.sub(".d$|.thermo.csv$|.processed.csv$|.txt$|.xml$", "", f) for f in file_list]
     temp_run = [re.sub(".corems.csv$", "", f) for f in run_list]
 
     # finding true/false indices for matches
@@ -423,4 +423,5 @@ else:
 
 for file in file_list:
     os.chdir(path_to_dir)
+    print(" ".join(["Loading", file]))
     CoreMS_Run(file, threshold_method)
