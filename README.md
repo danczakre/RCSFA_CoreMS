@@ -125,7 +125,7 @@ podman volume rm [volume name]
 ## Running the CoreMS Pipeline
 Assuming everything above worked (or that you had CoreMS installed through another mechanism), you are ready to run our pipeline. In principle, there are two steps to run data through CoreMS and we’ve provided example data for you to test each step.
 
-1) Run the CoreMS_Runner.py script on your data or the example data (*Test_Raw*).
+1) Run the CoreMS_Runner.py script on your data or the example data (*Test_Raw*). To run this script, you will need to change your directory to the downloaded RCSFA_CoreMS repository location and you need to ensure you have your corems-3.1.0 environment activated through conda.
 ```
 python CoreMS_Runner.py -i /Documents/Input_Data -o /Documents/Processed_Data -r /Documents/CoreMS-3.1.0/db/Hawkes_neg.ref
 
@@ -173,7 +173,7 @@ devtools::install_github("EMSL-Computing/ftmsRanalysis")
   - If you are still having issues, please let us know.
  
 ## Acknowledgements
-This pipeline leverages tools made by lots of talented folks. If you are using this repo for any reason, please definitely cite each of the following (though look at our manuscripts for a more complete list of common FTICR-MS related citations):
+This pipeline leverages tools made by lots of talented folks. If you are using this repo for any reason, please cite at least each of the following (though look at our manuscripts for a more complete list of common FTICR-MS related citations):
 1) **CoreMS** - [GitHub Link](https://github.com/EMSL-Computing/CoreMS)
 2) **ftmsRanalysis** - [GitHub Link](https://github.com/EMSL-Computing/ftmsRanalysis) and [Manuscript](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007654)
 3) **lambda** - [GitHub Link](https://github.com/hyunseobsong/lambda) and [Manuscript](https://doi.org/10.3389/fmicb.2020.531756)
