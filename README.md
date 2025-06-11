@@ -118,7 +118,7 @@ podman volume rm [volume name]
 12) Test your CoreMS installation using the provided Python script and test data
     - In your terminal, make sure that you have started your CoreMS environment
       - ```mamba activate corems-3.1.0```
-    - Run the “CoreMS_Runner.py” script on the provided example data
+    - Run the “CoreMS_Runner.py” script on the provided example data (be sure that you are running CoreMS_Runner.py from the downloaded RCSFA_CoreMS repository)
       - ```python CoreMS_Runner.py -i [path-to-CoreMS-repo]/tests/tests_data/ftms/srfa_neg_xml_example.xml -o [path-to-RCSFA-repo]/Output -r [path-to-Hawkes_neg.ref]```
     - If you see an output in your chosen output folder, everything worked correctly!
    
