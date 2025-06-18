@@ -143,7 +143,7 @@ Optional Options:
    - Install all the required packages in R
 ```
 install.packages(c(“devtools”, “tidyverse”, “easycsv”))
-devtools::install_github("EMSL-Computing/ftmsRanalysis")
+devtools::install_github("EMSL-Computing/ftmsRanalysis@1.0.0")
 ```
    - Change your input directory to your processed data or our example data (*Test_Processed*)
      - Currently, the script is configured to use easycsv (an OS agnostic package) to prompt the user to input their desired directory, though sometimes this can fail. In this case, you can set path_to_dir to your input directory. 
