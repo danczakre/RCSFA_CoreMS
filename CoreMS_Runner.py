@@ -28,8 +28,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-i', '--input_dir', required=True, help="Input directory that contains relevant FTICR-MS files (Required).")
 parser.add_argument('-o', '--output_dir', required=True, help="Specifies the output location (Required).")
 parser.add_argument('-r', '--reference_location', required=True, help="Specifies the location of the reference file in the CoreMS repo (Hawkes.ref) (Required).")
-parser.add_argument('-t', '--threshold_method', default='log', help="Set the threshold used during peak analyses (e.g., how are peaks going to be quality controlled). Log is set as the default; signal-to-noise is automatically used for XML files regardless of setting (Optional).")
+parser.add_argument('-t', '--threshold_method', default='log', help="Set the threshold used during peak analyses (e.g., how are peaks going to be quality controlled). Options: log or SN. Log is set as the default; signal-to-noise is automatically used for XML files regardless of setting (Optional).")
 parser.add_argument('-c', '--calib_thresh', default=5, type=int, help="Set the number of points required for a calibration to be considered 'good'. By default, this is set to 5 (Optional).")
+parser.add_argument('-sn', '--signal2noise', default=12, type=int, help="Set the signal-to-noise threshold used in the peak filtering step (only applicable if using signal-to-noise threshold method)")
 args = parser.parse_args()
 
 # Full path to directory containing Bruker XMLs or .d folders
@@ -46,6 +47,9 @@ threshold_method = args.threshold_method # options are signal-to-noise (SN) or l
 
 # Importing calibration thresholds
 min_cal_thresh = args.calib_thresh
+
+# Setting signal-to-noise value
+signal_to_noise = args.signal2noise
 
 # ##################################### #
 ### Load in Python functions/packages ###
@@ -117,8 +121,8 @@ def CoreMS_Run(file_path, threshold_method):
 
         if bool(re.search("SN", threshold_method)):  # threshold is signal-to-noise
             print("Using signal-to-noise thresholding")
-        # MSParameters.mass_spectrum.noise_threshold_method = "signal_noise"
-        # MSParameters.mass_spectrum.noise_threshold_min_s2n = 7
+            MSParameters.mass_spectrum.noise_threshold_method = "signal_noise"
+            MSParameters.mass_spectrum.noise_threshold_min_s2n = signal_to_noise
 
         elif bool(re.search("log", threshold_method)):  # threshold is log
             print("Using log thresholding")
@@ -146,7 +150,7 @@ def CoreMS_Run(file_path, threshold_method):
 
         # S2N filter
         if bool(re.search("SN", threshold_method)):
-            mass_spectrum_obj.filter_by_s2n(12)
+            mass_spectrum_obj.filter_by_s2n(signal_to_noise)
 
     elif bool(re.search(".xml", file_path)):  # importing .xml files
         print("Importing data from a Bruker XML.")
@@ -209,7 +213,7 @@ def CoreMS_Run(file_path, threshold_method):
         )
 
         # Filtering by SN
-        mass_spectrum_obj.filter_by_s2n(12)
+        mass_spectrum_obj.filter_by_s2n(signal_to_noise)
 
     elif bool(
         re.search(".txt", file_path)
@@ -241,7 +245,7 @@ def CoreMS_Run(file_path, threshold_method):
         )
 
         # Filtering by SN
-        mass_spectrum_obj.filter_by_s2n(7)
+        mass_spectrum_obj.filter_by_s2n(signal_to_noise)
 
     elif bool(
         re.search(".processed.csv", file_path)
