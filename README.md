@@ -130,13 +130,14 @@ Assuming everything above worked (or that you had CoreMS installed through anoth
 python CoreMS_Runner.py -i /Documents/Input_Data -o /Documents/Processed_Data -r /Documents/CoreMS-3.1.0/db/Hawkes_neg.ref
 
 Required Options:
--i = input folder
--o = output directory
+-i = input folder (please specify the full path)
+-o = output directory (please specify the full path)
 -r = location of reference for calibration; feel free to move the reference file elsewhere [found in the CoreMS repo by default]
 
 Optional Options:
--t = threshold method used in peak identification when run on a raw data file; xmls are always run using SN (log)
--c = calibration value used for selecting points (5)
+-t = threshold method used in peak identification when run on a raw data file; xmls are always run using SN (default: log)
+-c = calibration value used for selecting points (default: 5)
+-sn = set the signal-to-noise threshold if you do not want the default; I recommend either 7 or 12 (default: 12)
 ```
 
 2) Run the CoreMS_MergeProcess.Rmd script in RStudio.
@@ -159,6 +160,10 @@ devtools::install_github("EMSL-Computing/ftmsRanalysis@1.0.0") # make sure you u
 - conda/mamba confusion
   - These commands are virtually interchangable though there are some instances where they shouldn't be substituted
   - Given some inconsistencies in behavior that would lead to confusion, following the patterns above should serve you well. Specifically, use **conda to activate/deactivate environments** and use **mamba to install packages and create environments**.
+
+**CoreMS Troubleshooting**
+- This should only occur if you've updated macOS from Sonoma to Sequoia while you already had a CoreMS environment, but it is possible that you run into an error associated with Fortran. To resolve this, please run: ```mamba install "libgfortran5>=14"```
+
 
 **Podman Troubleshooting**
 - **Windows:** On occasion, Podman will appear running but ultimately any command you try to run will fail (e.g., Step 10d doesn’t work). This appears to be the result of a file not generating correctly.
