@@ -9,34 +9,34 @@ This repository will walk you through the installation of CoreMS and necessary p
 
 ## Instructions for installing CoreMS
 ### Overview
-Due to recent efforts from researchers at EMSL to improve formula assignment and overall processing of high-resolution mass spectrometry data, we are moving away from using Formularity/Formultitude to generate accessible FTICR-MS data and towards **CoreMS**. **CoreMS** is a framework used to analyze many types of mass spectrometry data and there is no single right way to use it (though there are plenty of wrong ways…). **CoreMS** provides several benefits over our previous workflow: 
+Due to recent efforts from researchers at EMSL to improve formula assignment and overall processing of high-resolution mass spectrometry data, we are moving away from using Formularity/Formultitude to generate FTICR-MS data and towards **CoreMS**. **CoreMS** is a framework used to analyze many types of mass spectrometry data and there is no single right way to use it (though there are plenty of wrong ways…). **CoreMS** provides several benefits over our previous workflow: 
 
 1)	We have finer control over each step of the analytical process from peak calling to formula assignment
-2)	It is open-source and non-proprietary, 
-3)	It is agnostic towards operating system because it is written using Python. 
+2)	It is open-source and non-proprietary 
+3)	It is agnostic towards operating system because it is written using Python 
 
 This instruction set will walk you through how to install CoreMS and all prerequisites, run our SFA’s CoreMS script, and regenerate our published datasets (or apply these methods to your own datasets). By default, our CoreMS-based pipeline accepts a variety of data types including raw FIDs from Bruker instruments, XML/mass lists generated using Bruker Data Analysis, and a series of miscellaneous mass lists; the script will identify the data type using the extension. This instruction set assumes limited knowledge of Python, conda/mamba, and similar programs – if you have experience with these, some of this information might be redundant!
 
 <ins>**Disclaimer:**</ins> We are not affiliated with the CoreMS development team and any issues with this instruction set are not associated with them. Please submit an issue to this repository if you run into any problems.
 
-<ins>**Important Note:**</ins> We set this signal-to-noise threshold to **12** for filtering peaks picked by Bruker's Data Analysis; this is fairly conservative. Feel free to change this to your needs (e.g., search for *filter_by_s2n* in the CoreMS_Runner.py file) and keep an eye out for an option that might be added down the road (we don't change it often on our end for standardization - but instrumental changes often merit changes).
+<ins>**Important Note:**</ins> We set this signal-to-noise threshold to **12** for filtering peaks picked by Bruker's Data Analysis; this is fairly conservative. Feel free to change this to your needs by using the -sn option that we have implemented in the CoreMS running script.
 
 ### Requirements
 - Reading through the CoreMS GitHub page (https://github.com/EMSL-Computing/CoreMS)
-- Download this repository - store is somewhere memorable!
+- Download this repository - store this somewhere memorable!
 - Any computer
   - These instructions are written for Windows and macOS; if you are using Linux, the macOS instructions should be equivalent
   - Some computers will likely run through the analyses slower than others, so the computer should be recent (newer than 2020-2021)
 - mamba installed via Miniforge
   - Please read through and follow the instructions that corresponds to your device on their GitHub: https://github.com/conda-forge/miniforge
-  - mamba allows us to use “virtual environments” which give us complete control of versioning (e.g., things installed into one virtual environment don’t impact the rest of your computer or other environments)
-  - There are other virtual environment tools, but (virtualenv, etc.) but mamba has had great reproducibility and isolation for us.
+  - mamba allows us to use “virtual environments” which give us control of versioning (e.g., things installed into one virtual environment don’t impact the rest of your computer or other environments)
+  - There are other virtual environment tools, but (virtualenv, etc.) but mamba has had great reproducibility for us.
 - R and RStudio
   - Download and install R: https://www.r-project.org/
   - Download and install RStudio: https://posit.co/download/rstudio-desktop/
 - _Recommended, but optional:_ An integrated development environment (IDE) of your choice – we recommend using VS Code (https://code.visualstudio.com/)
-  - An IDE is a program that allows you to have a bit more control over scripting and coding that simply writing in a simple text editor. This is useful if you plan on editing the script and want to do some testing on your own.
-  - VS Code is compatible with many different languages and, notably, interfaces well with virtual environments
+  - An IDE is a program that allows you to have a bit more control over scripting than simply writing in a text editor. This is useful if you plan on editing the script and want to do some testing on your own.
+  - VS Code is compatible with many different coding languages and interfaces well with virtual environments
   - Each IDE will need to be configured differently so please look up how to configure VS Code if you desire
   - RStudio is an IDE made specifically for R, but can also be configured to work with other languages.
 
@@ -55,8 +55,8 @@ brew upgrade
 brew install mono
 ```
 
-4) Create new virtual environment by running the following commands in your terminal
-   - One of the advantages of virtual environments is the control of software versions. By naming this environment after the date that you install (or the version of CoreMS you are using), you can always ensure you can go back to a known working and good version.
+4) Create a new virtual environment by running the following commands in your terminal
+   - One of the advantages of virtual environments is the control of software versions. By naming this environment after the date that you install or the version of CoreMS you are using, you can always ensure you can go back to a known working and good version.
 ```
 mamba update --all
 mamba create -n corems-3.1.0
@@ -145,7 +145,7 @@ Optional Options:
 ```
 install.packages(c(“devtools”, “tidyverse”))
 devtools::install_github("bogind/easycsv") # easycsv was on CRAN but removed...
-devtools::install_github("EMSL-Computing/ftmsRanalysis@1.0.0") # make sure you use version #1 for now
+devtools::install_github("EMSL-Computing/ftmsRanalysis@1.0.0") # make sure you use version 1.0.0 for now
 ```
    - Change your input directory to your processed data or our example data (*Test_Processed*)
      - Currently, the script is configured to use easycsv (an OS agnostic package) to prompt the user to input their desired directory, though sometimes this can fail. In this case, you can set path_to_dir to your input directory. 
