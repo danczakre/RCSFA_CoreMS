@@ -34,7 +34,7 @@ This instruction set will walk you through how to install CoreMS and all prerequ
 - R and RStudio
   - Download and install R: https://www.r-project.org/
   - Download and install RStudio: https://posit.co/download/rstudio-desktop/
-- _Recommended, but optional:_ An integrated development environment (IDE) of your choice – we recommend using VS Code (https://code.visualstudio.com/)
+- _Recommended, but optional:_ An integrated development environment (IDE) of your choice – we used VS Code (https://code.visualstudio.com/)
   - An IDE is a program that allows you to have a bit more control over scripting than simply writing in a text editor. This is useful if you plan on editing the script and want to do some testing on your own.
   - VS Code is compatible with many different coding languages and interfaces well with virtual environments
   - Each IDE will need to be configured differently so please look up how to configure VS Code if you desire
@@ -184,3 +184,5 @@ This pipeline leverages tools made by lots of talented folks. If you are using t
 2) **ftmsRanalysis** - [GitHub Link](https://github.com/EMSL-Computing/ftmsRanalysis) and [Manuscript](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1007654)
 3) **lambda** - [GitHub Link](https://github.com/hyunseobsong/lambda) and [Manuscript](https://doi.org/10.3389/fmicb.2020.531756)
 
+## License
+This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/. Please also see this [disclaimer](https://github.com/river-corridors-sfa/RCSFA_GitHub_Organization_Guidance/blob/main/DISCLAIMER.md).
